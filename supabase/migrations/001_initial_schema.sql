@@ -1,6 +1,11 @@
+-- ============================================
+-- EXTENSIONS
+-- ============================================
 create extension if not exists "pgcrypto";
 
--- the reference tables:
+-- ============================================
+-- REFERENCE / CATALOG TABLES
+-- ============================================
 create table cities (
   id uuid primary key default gen_random_uuid(),
   name text not null unique,
@@ -37,7 +42,9 @@ create table routes (
 
 create index idx_routes_source_dest on routes(source_city_id, destination_city_id);
 
--- trip tables block:
+-- ============================================
+-- TRIP-RELATED TABLES
+-- ============================================
 create table bus_trips (
   id uuid primary key default gen_random_uuid(),
   route_id uuid not null references routes(id) on delete restrict,
@@ -86,7 +93,9 @@ create table dropping_points (
 create index idx_boarding_points_trip on boarding_points(trip_id);
 create index idx_dropping_points_trip on dropping_points(trip_id);
 
--- profile and booking tables:
+-- ============================================
+-- PROFILE, BOOKING & RELATED TABLES
+-- ============================================
 create table profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   full_name text not null,
@@ -169,8 +178,34 @@ create table favourite_routes (
   unique (user_id, route_id)
 );
 
--- seed the data (same process: clear, paste, run)
--- Cities and operators:
+-- ============================================
+-- AUTH TRIGGER: auto-create profile on signup
+-- ============================================
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, full_name, phone)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', ''),
+    new.raw_user_meta_data->>'phone'
+  );
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row
+  execute function public.handle_new_user();
+
+-- ============================================
+-- SEED DATA
+-- ============================================
 insert into cities (name, state) values
   ('Mumbai', 'Maharashtra'),
   ('Pune', 'Maharashtra'),
@@ -189,8 +224,7 @@ insert into bus_operators (name, rating) values
   ('Comet Express', 3.9),
   ('Nova Coaches', 4.5),
   ('Pioneer Bus Lines', 4.0);
-  
---   Buses, route, trip: Buses (2 per operator, mixed types)
+
 insert into buses (operator_id, bus_number, bus_type, total_seats, amenities)
 select id, 'MH-12-AB-' || (1000 + row_number() over ()), 'AC_SLEEPER', 30, array['WiFi','Charging Point','Blanket']
 from bus_operators
@@ -198,14 +232,12 @@ union all
 select id, 'MH-14-CD-' || (2000 + row_number() over ()), 'NON_AC_SEATER', 45, array['Charging Point']
 from bus_operators;
 
--- One route: Mumbai -> Pune
 insert into routes (source_city_id, destination_city_id, distance_km)
 select
   (select id from cities where name = 'Mumbai'),
   (select id from cities where name = 'Pune'),
   150;
 
--- One trip on that route, tomorrow evening, using the first AC_SLEEPER bus
 insert into bus_trips (route_id, bus_id, departure_time, arrival_time, base_price)
 select
   (select id from routes limit 1),
@@ -214,30 +246,20 @@ select
   now() + interval '1 day' + interval '23 hours 30 minutes',
   899.00;
 
---   Seats: Now generate seats for that trip — 30 seats, lower + upper deck, sleeper berths:
 insert into trip_seats (trip_id, seat_number, deck, is_berth, price)
-select
-  (select id from bus_trips limit 1),
-  'L' || s,
-  'lower',
-  true,
-  899.00
+select (select id from bus_trips limit 1), 'L' || s, 'lower', true, 899.00
 from generate_series(1, 15) as s
 union all
-select
-  (select id from bus_trips limit 1),
-  'U' || s,
-  'upper',
-  true,
-  899.00
+select (select id from bus_trips limit 1), 'U' || s, 'upper', true, 899.00
 from generate_series(1, 15) as s;
 
--- Boarding/dropping points and coupons:
 insert into boarding_points (trip_id, location_name, address, scheduled_time)
-select (select id from bus_trips limit 1), 'Dadar Bus Stand', 'Dadar East, Mumbai', now() + interval '1 day' + interval '20 hours';
+select id, 'Dadar Bus Stand', 'Dadar East, Mumbai', departure_time
+from bus_trips;
 
 insert into dropping_points (trip_id, location_name, address, scheduled_time)
-select (select id from bus_trips limit 1), 'Shivajinagar Bus Stand', 'Shivajinagar, Pune', now() + interval '1 day' + interval '23 hours 30 minutes';
+select id, 'Shivajinagar Bus Stand', 'Shivajinagar, Pune', arrival_time
+from bus_trips;
 
 insert into coupons (code, discount_type, discount_value, min_booking_amount, max_discount_amount, valid_until) values
   ('FIRST100', 'fixed', 100, 500, null, now() + interval '90 days'),
