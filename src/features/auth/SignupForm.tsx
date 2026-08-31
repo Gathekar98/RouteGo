@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { signupSchema, SignupFormValues } from './schemas';
+import { signupSchema, type SignupFormValues } from './schemas';
 import { signUp } from './api';
 
 export function SignupForm() {
