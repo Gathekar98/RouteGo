@@ -1,12 +1,13 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { loginSchema, type LoginFormValues } from './schemas';
 import { signIn } from './api';
 
 export function LoginForm() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
@@ -19,7 +20,8 @@ export function LoginForm() {
     setServerError(null);
     try {
       await signIn(values);
-      navigate('/');
+      const redirectTo = (location.state as { from?: string } | null)?.from ?? '/';
+      navigate(redirectTo, { replace: true });
     } catch {
       setServerError('Invalid email or password.');
     }
@@ -44,6 +46,10 @@ export function LoginForm() {
       <button type="submit" disabled={isSubmitting}>
         {isSubmitting ? 'Logging in…' : 'Log In'}
       </button>
+
+      <p>
+        <Link to="/forgot-password">Forgot password?</Link>
+      </p>
     </form>
   );
 }
