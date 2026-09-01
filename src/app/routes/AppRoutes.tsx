@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import { AppLayout } from '../../components/layout/AppLayout/AppLayout';
 import { HomePage } from '../../pages/HomePage';
 import { SignupPage } from '../../pages/SignupPage';
 import { LoginPage } from '../../pages/LoginPage';
@@ -13,19 +14,21 @@ function MyTripsPlaceholderPage() {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/signup" element={<SignupPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route
-        path="/my-trips"
-        element={
-          <ProtectedRoute>
-            <MyTripsPlaceholderPage />
-          </ProtectedRoute>
-        }
-      />
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="/my-trips"
+          element={
+            <ProtectedRoute>
+              <MyTripsPlaceholderPage />
+            </ProtectedRoute>
+          }
+        />
+      </Route>
     </Routes>
   );
 }
