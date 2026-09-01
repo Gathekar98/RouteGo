@@ -1,0 +1,61 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+
+  @media (min-width: 700px) {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.operatorName {
+  font-weight: 700;
+  font-size: 1.0625rem;
+}
+
+.busMeta {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.timing {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.9375rem;
+}
+
+.time {
+  font-weight: 700;
+}
+
+.duration {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+.amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.priceBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+
+.price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-secondary);
+}
+
+.seatsLeft {
+  font-size: 0.8125rem;
+  color: var(--color-warning);
+}
