@@ -1,9 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 import uiReducer from '../../features/user/uiSlice';
+import bookingReducer from '../../features/booking/bookingSlice';
 
 export const store = configureStore({
   reducer: {
     ui: uiReducer,
+    booking: bookingReducer,
   },
 });
 

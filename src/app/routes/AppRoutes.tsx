@@ -8,13 +8,10 @@ import { ResetPasswordPage } from '../../pages/ResetPasswordPage';
 import { SearchResultsPage } from '../../pages/SearchResultsPage';
 import { ProtectedRoute } from './ProtectedRoute';
 import { BusDetailsPage } from '../../pages/BusDetailsPage';
+import { SeatSelectionPage } from '../../pages/SeatSelectionPage';
 
 function MyTripsPlaceholderPage() {
   return <main><h1>My Trips (placeholder — built in Phase 18)</h1></main>;
-}
-
-function BusDetailsPlaceholderPage() {
-  return <main><h1>Bus Details (placeholder — built in Phase 10)</h1></main>;
 }
 
 function NotFoundPage() {
@@ -26,8 +23,8 @@ function NotFoundPage() {
   );
 }
 
-function SeatSelectionPlaceholderPage() {
-  return <main><h1>Seat Selection (placeholder — built in Phase 11)</h1></main>;
+function PassengersPlaceholderPage() {
+  return <main><h1>Passenger Details (placeholder — built in Phase 13)</h1></main>;
 }
 
 export function AppRoutes() {
@@ -41,7 +38,8 @@ export function AppRoutes() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/search-results" element={<SearchResultsPage />} />
         <Route path="/bus/:tripId" element={<BusDetailsPage />} />
-        <Route path="/trip/:tripId/seats" element={<SeatSelectionPlaceholderPage />} />
+        <Route path="/trip/:tripId/seats" element={<SeatSelectionPage />} />
+        <Route path="/trip/:tripId/passengers" element={<PassengersPlaceholderPage />} />
         <Route
           path="/my-trips"
           element={
