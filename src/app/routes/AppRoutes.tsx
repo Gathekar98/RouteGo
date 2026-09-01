@@ -16,6 +16,15 @@ function BusDetailsPlaceholderPage() {
   return <main><h1>Bus Details (placeholder — built in Phase 10)</h1></main>;
 }
 
+function NotFoundPage() {
+  return (
+    <main style={{ padding: 48, textAlign: 'center' }}>
+      <h1>404 — Page Not Found</h1>
+      <p>The page you're looking for doesn't exist.</p>
+    </main>
+  );
+}
+
 export function AppRoutes() {
   return (
     <Routes>
@@ -35,6 +44,7 @@ export function AppRoutes() {
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );
