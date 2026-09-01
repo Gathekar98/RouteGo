@@ -26,3 +26,19 @@ export type SortOption =
   | 'departure_desc'
   | 'duration_asc'
   | 'rating_desc';
+
+export interface BoardingPoint {
+  id: string;
+  locationName: string;
+  address: string | null;
+  scheduledTime: string;
+}
+
+export interface TripDetails extends BusTripResult {
+  sourceCity: string;
+  destinationCity: string;
+  distanceKm: number | null;
+  totalSeats: number;
+  boardingPoints: BoardingPoint[];
+  droppingPoints: BoardingPoint[];
+}
