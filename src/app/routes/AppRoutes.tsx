@@ -6,9 +6,14 @@ import { LoginPage } from '../../pages/LoginPage';
 import { ForgotPasswordPage } from '../../pages/ForgotPasswordPage';
 import { ResetPasswordPage } from '../../pages/ResetPasswordPage';
 import { SearchResultsPage } from '../../pages/SearchResultsPage';
-import { ProtectedRoute } from './ProtectedRoute';
 import { BusDetailsPage } from '../../pages/BusDetailsPage';
 import { SeatSelectionPage } from '../../pages/SeatSelectionPage';
+import { PassengersPage } from '../../pages/PassengersPage';
+import { ProtectedRoute } from './ProtectedRoute';
+
+function ReviewPlaceholderPage() {
+  return <main><h1>Booking Review (placeholder — built in Phase 14)</h1></main>;
+}
 
 function MyTripsPlaceholderPage() {
   return <main><h1>My Trips (placeholder — built in Phase 18)</h1></main>;
@@ -23,10 +28,6 @@ function NotFoundPage() {
   );
 }
 
-function PassengersPlaceholderPage() {
-  return <main><h1>Passenger Details (placeholder — built in Phase 13)</h1></main>;
-}
-
 export function AppRoutes() {
   return (
     <Routes>
@@ -39,7 +40,8 @@ export function AppRoutes() {
         <Route path="/search-results" element={<SearchResultsPage />} />
         <Route path="/bus/:tripId" element={<BusDetailsPage />} />
         <Route path="/trip/:tripId/seats" element={<SeatSelectionPage />} />
-        <Route path="/trip/:tripId/passengers" element={<PassengersPlaceholderPage />} />
+        <Route path="/trip/:tripId/passengers" element={<PassengersPage />} />
+        <Route path="/trip/:tripId/review" element={<ReviewPlaceholderPage />} />
         <Route
           path="/my-trips"
           element={
