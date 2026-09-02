@@ -15,6 +15,7 @@ interface BookingDraftState {
   boardingPointId: string | null;
   droppingPointId: string | null;
   passengers: Passenger[];
+  couponCode: string | null;
 }
 
 const initialState: BookingDraftState = {
@@ -23,6 +24,7 @@ const initialState: BookingDraftState = {
   boardingPointId: null,
   droppingPointId: null,
   passengers: [],
+  couponCode: null,
 };
 
 const bookingSlice = createSlice({
@@ -35,6 +37,7 @@ const bookingSlice = createSlice({
         state.boardingPointId = null;
         state.droppingPointId = null;
         state.passengers = [];
+        state.couponCode = null;
       }
       state.tripId = action.payload;
     },
@@ -56,12 +59,16 @@ const bookingSlice = createSlice({
     setPassengers(state, action: PayloadAction<Passenger[]>) {
       state.passengers = action.payload;
     },
+    setCoupon(state, action: PayloadAction<string | null>) {
+      state.couponCode = action.payload;
+    },
     clearBookingDraft(state) {
       state.tripId = null;
       state.selectedSeatIds = [];
       state.boardingPointId = null;
       state.droppingPointId = null;
       state.passengers = [];
+      state.couponCode = null;
     },
   },
 });
@@ -72,6 +79,7 @@ export const {
   setBoardingPoint,
   setDroppingPoint,
   setPassengers,
+  setCoupon,
   clearBookingDraft,
 } = bookingSlice.actions;
 export default bookingSlice.reducer;

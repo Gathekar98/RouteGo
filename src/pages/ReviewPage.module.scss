@@ -1,0 +1,41 @@
+.layout {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  padding-bottom: 120px;
+}
+
+.section {
+  margin-bottom: var(--space-xl);
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 0.9375rem;
+}
+
+.totalRow {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid var(--color-border);
+  font-weight: 800;
+  font-size: 1.125rem;
+}
+
+.footerBar {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-bg);
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-md) var(--space-lg);
+  margin-left: calc(var(--space-lg) * -1);
+  margin-right: calc(var(--space-lg) * -1);
+  margin-top: var(--space-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
