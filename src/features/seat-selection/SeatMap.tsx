@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../app/store/store';
 import { toggleSeat, MAX_SEATS_PER_BOOKING } from '../booking/bookingSlice';
+import { useToast } from '../../components/ui/Toast/ToastContext';
 import type { Seat, Deck } from './types';
 import styles from './SeatMap.module.scss';
 
@@ -11,6 +12,7 @@ interface SeatMapProps {
 
 export function SeatMap({ seats }: SeatMapProps) {
   const dispatch = useDispatch();
+  const toast = useToast();
   const selectedSeatIds = useSelector((state: RootState) => state.booking.selectedSeatIds);
 
   const hasUpperDeck = seats.some((seat) => seat.deck === 'upper');
@@ -23,7 +25,7 @@ export function SeatMap({ seats }: SeatMapProps) {
 
     const isCurrentlySelected = selectedSeatIds.includes(seat.id);
     if (!isCurrentlySelected && selectedSeatIds.length >= MAX_SEATS_PER_BOOKING) {
-      alert(`You can select up to ${MAX_SEATS_PER_BOOKING} seats per booking.`);
+      toast.info(`You can select up to ${MAX_SEATS_PER_BOOKING} seats per booking.`);
       return;
     }
 
