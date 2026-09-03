@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { useQuery } from '@tanstack/react-query';
 import type { RootState } from '../app/store/store';
+import { clearBookingDraft } from '../features/booking/bookingSlice';
 import { useTripSeats } from '../features/seat-selection/useTripSeats';
 import { calculateBookingTotal } from '../features/pricing/calculateBookingTotal';
+import { validateCoupon } from '../features/coupons/api';
+import { createBooking } from '../features/booking/api';
 import { PaymentMethodSelector } from '../features/payment/PaymentMethodSelector';
 import type { PaymentMethod, PaymentStatus } from '../features/payment/types';
 import { useToast } from '../components/ui/Toast/ToastContext';
@@ -11,46 +15,75 @@ import { Card } from '../components/ui/Card/Card';
 import { Button } from '../components/ui/Button/Button';
 import styles from './PaymentPage.module.scss';
 
-// Simulated failure rate — deliberately not 0%, so the failure/retry path
-// gets real exercise rather than being dead code no one ever sees run.
 const SIMULATED_FAILURE_RATE = 0.15;
 const SIMULATED_PROCESSING_MS = 1800;
 
 export function PaymentPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const toast = useToast();
 
-  const { selectedSeatIds } = useSelector((state: RootState) => state.booking);
+  const { selectedSeatIds, passengers, boardingPointId, droppingPointId, couponCode } = useSelector(
+    (state: RootState) => state.booking
+  );
   const { data: seats } = useTripSeats(tripId);
 
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [status, setStatus] = useState<PaymentStatus>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const selectedSeats = (seats ?? []).filter((seat) => selectedSeatIds.includes(seat.id));
   const seatPrices = selectedSeats.map((seat) => seat.price);
-  // Note: coupon isn't re-applied here since it lives only in component state on
-  // the Review page in our current implementation — Phase 16 will need to persist
-  // the applied coupon into Redux too, so the final charge reflects it. Flagging
-  // this as a real gap to close before wiring up actual booking creation.
-  const pricing = calculateBookingTotal(seatPrices, null);
+  const baseFare = seatPrices.reduce((sum, price) => sum + price, 0);
 
-  function handlePay() {
+  // Re-validate the stored coupon here purely for an accurate DISPLAY total.
+  // The actual charge is always authoritatively recalculated server-side
+  // inside create_booking — this query never affects what gets recorded.
+  const { data: couponResult } = useQuery({
+    queryKey: ['coupon-display', couponCode, baseFare],
+    queryFn: () => validateCoupon(couponCode!, baseFare),
+    enabled: !!couponCode,
+  });
+
+  const displayCoupon = couponResult?.isValid ? couponResult.coupon : null;
+  const pricing = calculateBookingTotal(seatPrices, displayCoupon);
+
+  async function handlePay() {
     if (!method) return;
     setStatus('processing');
+    setErrorMessage(null);
 
-    setTimeout(() => {
-      const didSucceed = Math.random() > SIMULATED_FAILURE_RATE;
+    setTimeout(async () => {
+      const paymentSimulationSucceeded = Math.random() > SIMULATED_FAILURE_RATE;
 
-      if (didSucceed) {
-        setStatus('success');
-        toast.success('Payment successful!');
-        // Phase 16 will replace this with real, secure booking creation.
-        // For now we just simulate arriving at a confirmation step.
-        navigate(`/trip/${tripId}/confirmation`);
-      } else {
+      if (!paymentSimulationSucceeded) {
         setStatus('failed');
+        setErrorMessage('Your payment could not be processed. No amount has been deducted.');
         toast.error('Payment failed. Please try again.');
+        return;
+      }
+
+      // Payment "succeeded" — now perform the real, secure booking creation.
+      try {
+        const result = await createBooking({
+          tripId: tripId!,
+          passengers,
+          boardingPointId: boardingPointId!,
+          droppingPointId: droppingPointId!,
+          paymentMethod: method,
+          couponCode,
+        });
+
+        toast.success('Booking confirmed!');
+        dispatch(clearBookingDraft());
+        navigate(`/trip/${tripId}/confirmation?bookingId=${result.booking_id}`);
+      } catch (err) {
+        setStatus('failed');
+        const message =
+          err instanceof Error ? err.message : 'Could not complete your booking. Please try again.';
+        setErrorMessage(message);
+        toast.error(message);
       }
     }, SIMULATED_PROCESSING_MS);
   }
@@ -84,11 +117,9 @@ export function PaymentPage() {
         />
       </Card>
 
-      {status === 'failed' && (
+      {status === 'failed' && errorMessage && (
         <Card style={{ marginBottom: 24, borderColor: 'var(--color-error)' }}>
-          <p style={{ color: 'var(--color-error)', fontWeight: 600 }}>
-            Your payment could not be processed. No amount has been deducted.
-          </p>
+          <p style={{ color: 'var(--color-error)', fontWeight: 600 }}>{errorMessage}</p>
         </Card>
       )}
 
