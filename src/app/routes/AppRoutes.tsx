@@ -11,11 +11,8 @@ import { SeatSelectionPage } from '../../pages/SeatSelectionPage';
 import { PassengersPage } from '../../pages/PassengersPage';
 import { ReviewPage } from '../../pages/ReviewPage';
 import { PaymentPage } from '../../pages/PaymentPage';
+import { ConfirmationPage } from '../../pages/ConfirmationPage';
 import { ProtectedRoute } from './ProtectedRoute';
-
-function ConfirmationPlaceholderPage() {
-  return <main><h1>Booking Confirmation (placeholder — built in Phase 17)</h1></main>;
-}
 
 function MyTripsPlaceholderPage() {
   return <main><h1>My Trips (placeholder — built in Phase 18)</h1></main>;
@@ -45,7 +42,7 @@ export function AppRoutes() {
         <Route path="/trip/:tripId/passengers" element={<PassengersPage />} />
         <Route path="/trip/:tripId/review" element={<ReviewPage />} />
         <Route path="/trip/:tripId/payment" element={<PaymentPage />} />
-        <Route path="/trip/:tripId/confirmation" element={<ConfirmationPlaceholderPage />} />
+        <Route path="/trip/:tripId/confirmation" element={<ConfirmationPage />} />
         <Route
           path="/my-trips"
           element={
