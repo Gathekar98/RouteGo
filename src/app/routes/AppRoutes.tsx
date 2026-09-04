@@ -12,11 +12,8 @@ import { PassengersPage } from '../../pages/PassengersPage';
 import { ReviewPage } from '../../pages/ReviewPage';
 import { PaymentPage } from '../../pages/PaymentPage';
 import { ConfirmationPage } from '../../pages/ConfirmationPage';
+import { MyTripsPage } from '../../pages/MyTripsPage';
 import { ProtectedRoute } from './ProtectedRoute';
-
-function MyTripsPlaceholderPage() {
-  return <main><h1>My Trips (placeholder — built in Phase 18)</h1></main>;
-}
 
 function NotFoundPage() {
   return (
@@ -43,11 +40,12 @@ export function AppRoutes() {
         <Route path="/trip/:tripId/review" element={<ReviewPage />} />
         <Route path="/trip/:tripId/payment" element={<PaymentPage />} />
         <Route path="/trip/:tripId/confirmation" element={<ConfirmationPage />} />
+        <Route path="/trip/booking/confirmation" element={<ConfirmationPage />} />
         <Route
           path="/my-trips"
           element={
             <ProtectedRoute>
-              <MyTripsPlaceholderPage />
+              <MyTripsPage />
             </ProtectedRoute>
           }
         />
