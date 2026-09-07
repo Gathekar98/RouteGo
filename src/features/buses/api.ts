@@ -34,30 +34,32 @@ export async function searchTrips(
   if (!route) return [];
 
   // Step 3: fetch trips on that route, on that date, with bus/operator/seat info joined
-  const dayStart = `${date}T00:00:00`;
-  const dayEnd = `${date}T23:59:59`;
+ const dayStart = `${date}T00:00:00`;
+const dayEnd = `${date}T23:59:59`;
+const bookingCutoff = new Date(Date.now() + 20 * 60 * 1000).toISOString();
 
-  const { data: trips, error: tripsError } = await supabase
-    .from('bus_trips')
-    .select(
-      `
-      id,
-      departure_time,
-      arrival_time,
-      base_price,
-      bus:buses (
-        bus_number,
-        bus_type,
-        amenities,
-        operator:bus_operators ( name, rating )
-      ),
-      trip_seats ( status )
+const { data: trips, error: tripsError } = await supabase
+  .from('bus_trips')
+  .select(
     `
-    )
-    .eq('route_id', route.id)
-    .gte('departure_time', dayStart)
-    .lte('departure_time', dayEnd)
-    .order('departure_time');
+    id,
+    departure_time,
+    arrival_time,
+    base_price,
+    bus:buses (
+      bus_number,
+      bus_type,
+      amenities,
+      operator:bus_operators ( name, rating )
+    ),
+    trip_seats ( status )
+  `
+  )
+  .eq('route_id', route.id)
+  .gte('departure_time', dayStart)
+  .lte('departure_time', dayEnd)
+  .gte('departure_time', bookingCutoff)
+  .order('departure_time');
 
   if (tripsError) throw tripsError;
 

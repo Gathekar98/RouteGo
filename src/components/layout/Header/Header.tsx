@@ -4,6 +4,7 @@ import { useAuth } from '../../../features/auth/useAuth';
 import { signOut } from '../../../features/auth/api';
 import { Button } from '../../ui/Button/Button';
 import { MobileNav } from '../MobileNav/MobileNav';
+import { NotificationBell } from '../../../features/notifications/NotificationBell';
 import styles from './Header.module.scss';
 
 export function Header() {
@@ -32,6 +33,8 @@ export function Header() {
         </nav>
 
         <div className={styles.actions}>
+          {session && <NotificationBell />}
+
           {!isLoading && (
             <div className={styles.userMenu}>
               {session ? (
