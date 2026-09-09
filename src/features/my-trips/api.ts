@@ -34,6 +34,6 @@ export async function getMyTrips(): Promise<MyTripSummary[]> {
     busType: b.trip.bus.bus_type,
     seatNumbers: b.passengers.map((p: any) => p.seat.seat_number),
     totalAmount: b.total_amount,
-    paymentStatus: b.payment[0]?.status ?? 'unknown',
+    paymentStatus: (Array.isArray(b.payment) ? b.payment[0] : b.payment)?.status ?? 'unknown',
   }));
 }

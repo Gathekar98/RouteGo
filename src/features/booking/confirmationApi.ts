@@ -22,6 +22,7 @@ export interface BookingConfirmation {
   paymentMethod: string;
   paymentStatus: string;
   paymentReference: string;
+  emailStatus: string;
 }
 
 export async function getBookingConfirmation(bookingId: string): Promise<BookingConfirmation | null> {
@@ -30,7 +31,7 @@ export async function getBookingConfirmation(bookingId: string): Promise<Booking
     .select(
       `
       id, booking_reference, status, base_fare, discount_amount,
-      convenience_fee, total_amount, created_at,
+      convenience_fee, total_amount, created_at, email_status,
       trip:bus_trips (
         departure_time, arrival_time,
         route:routes (
@@ -55,7 +56,8 @@ export async function getBookingConfirmation(bookingId: string): Promise<Booking
   if (!booking) return null;
 
   const b: any = booking;
-
+  const paymentData = Array.isArray(b.payment) ? b.payment[0] : b.payment;
+console.log('Raw payment shape:', b.payment);
   return {
     id: b.id,
     bookingReference: b.booking_reference,
@@ -80,8 +82,9 @@ export async function getBookingConfirmation(bookingId: string): Promise<Booking
       gender: p.gender,
       seatNumber: p.seat.seat_number,
     })),
-    paymentMethod: b.payment[0]?.payment_method ?? 'unknown',
-    paymentStatus: b.payment[0]?.status ?? 'unknown',
-    paymentReference: b.payment[0]?.payment_reference ?? '',
+    paymentMethod: paymentData?.payment_method ?? 'unknown',
+    paymentStatus: paymentData?.status ?? 'unknown',
+    paymentReference: paymentData?.payment_reference ?? '',
+    emailStatus: b.email_status,
   };
 }

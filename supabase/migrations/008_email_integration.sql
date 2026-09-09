@@ -1,19 +1,40 @@
--- Email integration setup notes (some steps done via dashboard, not pure SQL):
---
--- 1. Created Edge Function "send-booking-email" via Supabase dashboard
---    (CLI was unusable due to a Bun/AVX crash on this machine's CPU).
--- 2. Disabled "Verify JWT with legacy secret" in that function's Settings tab,
---    since it's only ever invoked server-side from create_booking, not
---    directly from the browser.
--- 3. Added two Edge Function secrets via dashboard:
---    - RESEND_API_KEY (from resend.com)
---    - INTERNAL_FUNCTION_SECRET (a random string, shared with create_booking
---      below, since JWT verification is off and we needed our own check)
---
--- The function code itself lives in supabase/functions/send-booking-email/index.ts
+-- (keep the existing notes/comments block from before, then add:)
 
-create extension if not exists pg_net;
+alter table bookings
+  add column if not exists email_status text not null default 'pending'
+    check (email_status in ('pending', 'sent', 'failed')),
+  add column if not exists email_request_id bigint;
 
--- create_booking is updated (not recreated from scratch here) to add
--- email-triggering logic as its final step. See the full current definition
--- via: select prosrc from pg_proc where proname = 'create_booking';
+create or replace function public.reconcile_email_statuses()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update bookings b
+  set email_status = 'sent'
+  from net._http_response r
+  where b.email_request_id = r.id
+    and b.email_status = 'pending'
+    and r.status_code = 200;
+
+  update bookings b
+  set email_status = 'failed'
+  from net._http_response r
+  where b.email_request_id = r.id
+    and b.email_status = 'pending'
+    and r.status_code is distinct from 200;
+
+  update bookings b
+  set email_status = 'failed'
+  where b.email_status = 'pending'
+    and b.created_at < now() - interval '5 minutes';
+end;
+$$;
+
+select cron.schedule(
+  'reconcile-email-statuses',
+  '* * * * *',
+  $$select public.reconcile_email_statuses();$$
+);

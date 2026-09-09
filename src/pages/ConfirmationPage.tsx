@@ -100,6 +100,12 @@ export function ConfirmationPage() {
             {booking.paymentStatus}
           </Badge>
         </div>
+        <div className={styles.row}>
+          <strong>Confirmation Email</strong>
+          {booking.emailStatus === 'sent' && <Badge variant="success">Sent</Badge>}
+          {booking.emailStatus === 'pending' && <Badge variant="neutral">Sending…</Badge>}
+          {booking.emailStatus === 'failed' && <Badge variant="error">Failed</Badge>}
+        </div>
       </Card>
 
       <div className={styles.actions}>
